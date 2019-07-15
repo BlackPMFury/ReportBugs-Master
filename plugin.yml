@@ -1,0 +1,17 @@
+name: ReportBugs
+main: BugsReward\ReportBugs\Main
+api:
+ - 3.0.0
+ - 3.2.0
+version: 2.0-ALPHA
+author: BlackPMFury
+description: Bugs Report.
+commands:
+ reportbug:
+  description: "Báo Cáo Lỗi cho OP"
+  usage: /reportbug <Lỗi> <Nhận Xét>
+  permission: tocao.perms
+permissions:
+ tocao.perms:
+  desciption: "Báo Lỗi Cho OP"
+  default: op
