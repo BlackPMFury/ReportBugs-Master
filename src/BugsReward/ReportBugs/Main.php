@@ -38,14 +38,12 @@ class Main extends PluginBase implements Listener{
 		$name = $player->getName();
 		if($player->isOp()){
 			$this->getServer()->broadcastMessage("§l§aAdmin/Operator§c ".$name."§a Đã Thoát Server!");
-			foreach($this->sr->get($name) as $config){
-				$player->sendMessage($config);
-			}
+			//$player->sendMessage($this->sr->get($name));
 		}
 	}
 	
-	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args): bool{
-		switch($cmd->getName()){
+	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $ar): bool{
+		switch(strtolower($cmd->getName())){
 			case "reportbug":
 			if(!($sender instanceof Player)){
 				$this->getServer()->getLogger()->warning("Please Use In Server!");
@@ -53,25 +51,43 @@ class Main extends PluginBase implements Listener{
 			}
 			$msg = "
 §a----[Bugs Report]----
-§c• §aExample:§d /reportbug [lỗi] [Nhận Xét/Chỉ Lỗi]
+§c• §aExample:§d /reportbug [gui/send]
 §c• Page §e[1/1]
 §a---------------------
 ";
             
-			if(isset($args[0]) || isset($args[1])){
+			if(!(isset($ar[0]) || isset($ar[1]))){
 				$sender->sendMessage($msg);
 				return true;
 			}
-			foreach($this->getServer()->getOnlinePlayers() as $p){
-				$this->sr->set($player->getName(), ["Lỗi" => $args[0], "Nhận Xét" => $args[1]]);
-				$this->sr->save();
-				$p->sendMessage($this->tag . "§a Báo Cáo Thành Công!");
-				if($player->isOp()){
-					$p->sendMessage($this->tag . "§b Có người Báo Cáo Lỗi Op Ơi!");
-				}
+			//foreach($this->getServer()->getOnlinePlayers() as $p){
+			if($ar[0] == "send" || $ar[0] == "gui"){
+				$this->baoCao($sender);
 			}
+			//}
 			return true;
 		}
 		return true;
+	}
+	
+	public function baoCao($sender){
+		$api = $this->getServer()->getPluginManager()->getPlugin("FormAPI");
+		$form = $api->createCustomForm(Function (Player $sender, $data){
+			$this->sr->set($sender->getName(), ["Lỗi" => $data[1], "Nhận Xét" => $data[2]]);
+			$this->sr->save();
+			if($sender->isOp()){
+				$sender->sendMessage($this->tag . " §bCó người Gửi Báo Cáo OP ơi!");
+			}else{
+				$sender->sendMessage($this->tag . " §aGửi Báo Cáo Thành Công!");
+			}
+			foreach($this->getServer()->getOnlinePlayers() as $pl){
+				$pl->sendPopup("§cCompleted!");
+			}
+		});
+		$form->setTitle($this->tag);
+		$form->addLabel("§a Diền Vào Ô sau:");
+		$form->addInput("§a Điền Lỗi");
+		$form->addInput("§a Nhận Xét");
+		$form->sendToPlayer($sender);
 	}
 }
